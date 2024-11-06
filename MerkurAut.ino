@@ -1,9 +1,9 @@
 #include <Servo.h>
 Servo myservo;
 
-
+                    //LF, LB, RF, RB
 const int MOTORS[] = {10, 9, 6, 5};
-const int LINE_SENSORS[] = {A0, A2};
+const int LINE_SENSORS[] = {A5, A4};
 const int LINE_SENSORS_TRESHOLD[] = {500, 500};
 
 void setup(){
@@ -19,5 +19,42 @@ void setup(){
 }
 
 void loop(){
-  // TODO: Write good algorithm to drive the fking car
+  bool middleSensor = testRFSensor(0);
+  bool rightSensor = testRFSensor(1);
+  if(middleSensor){
+    goForward();
+    return;
+  }
+  if(rightSensor){
+    turnRight();
+    return;
+  }
+  turnLeft();
 }
+
+
+bool testRFSensor(int sensorIndex) {
+  int value = analogRead(LINE_SENSORS[sensorIndex]);
+  return (value <= LINE_SENSORS_TRESHOLD[sensorIndex]);
+}
+
+void turnRight() {
+  for(int i = 0; i < sizeof(MOTORS); i++){
+    digitalWrite(MOTORS[i], (!(i == 1 || i == 2) ? HIGH : LOW));
+  }
+}
+
+void turnLeft() {
+  for(int i = 0; i < sizeof(MOTORS); i++){
+    digitalWrite(MOTORS[i], ((i == 1 || i == 2) ? HIGH : LOW));
+  }
+}
+
+void goForward(){
+  for(int i = 0; i < sizeof(MOTORS); i++){
+    digitalWrite(MOTORS[i], (i % 2 == 0 ? HIGH : LOW));
+  }
+}
+
+
+
