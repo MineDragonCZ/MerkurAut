@@ -4,10 +4,12 @@ Servo myservo;
                     //LF, LB, RF, RB
 const int MOTORS[] = {10, 9, 6, 5};
 const int LINE_SENSORS[] = {A5, A4};
-const int LINE_SENSORS_TRESHOLD[] = {500, 500};
+const int LINE_SENSORS_TRESHOLD[] = {750, 750};
+
+const int motorSpeed = 140;
 
 void setup(){
-  myservo.attach(11);
+  //myservo.attach(11);
   for(int i = 0; i < sizeof(MOTORS); i++){
     pinMode(MOTORS[i], OUTPUT);
   }
@@ -23,36 +25,40 @@ void loop(){
   bool rightSensor = testRFSensor(1);
   if(middleSensor){
     goForward();
+    Serial.println("Forward");
     return;
   }
   if(rightSensor){
     turnRight();
+    Serial.println("Right");
     return;
   }
   turnLeft();
+  Serial.println("Left");
 }
 
 
 bool testRFSensor(int sensorIndex) {
   int value = analogRead(LINE_SENSORS[sensorIndex]);
-  return (value <= LINE_SENSORS_TRESHOLD[sensorIndex]);
+  Serial.println(value);
+  return (value > LINE_SENSORS_TRESHOLD[sensorIndex]);
 }
 
 void turnRight() {
   for(int i = 0; i < sizeof(MOTORS); i++){
-    digitalWrite(MOTORS[i], (!(i == 1 || i == 2) ? HIGH : LOW));
+    analogWrite(MOTORS[i], (!(i == 1 || i == 2) ? motorSpeed : 0));
   }
 }
 
 void turnLeft() {
   for(int i = 0; i < sizeof(MOTORS); i++){
-    digitalWrite(MOTORS[i], ((i == 1 || i == 2) ? HIGH : LOW));
+    analogWrite(MOTORS[i], ((i == 1 || i == 2) ? motorSpeed : 0));
   }
 }
 
 void goForward(){
   for(int i = 0; i < sizeof(MOTORS); i++){
-    digitalWrite(MOTORS[i], (i % 2 == 0 ? HIGH : LOW));
+    analogWrite(MOTORS[i], (i % 2 == 0 ? motorSpeed : 0));
   }
 }
 
