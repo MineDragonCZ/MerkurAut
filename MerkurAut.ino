@@ -10,8 +10,8 @@ const int LINE_SENSORS_TRESHOLD[] = { 800 };
 const int SONAR_TRIG[] = { 4, 5 };
 const int SONAR_ECHO[] = { 6, 7 };
 const double SONAR_TRESHOLDS[2][2] = {
-  { 20, 25 },
-  { 10, 25 }
+  { 30, 25 },
+  { 5, 40 }
 };
 
 const double RIGHT_CHECK_DISTANCE_TRESHOLD = 3.0;
@@ -25,9 +25,6 @@ const int LEDS[] = { A3, A4, A5 };
 bool isOnTrack = false;
 long lastLineTest = 0;
 long lastDriveUpdate = 0;
-
-const int defaultDelay = 120;
-int waitDelay = defaultDelay;
 
 void setup() {
   for(int i = 0; i < sizeof(MOTORS); i++){
@@ -49,22 +46,7 @@ void setup() {
 }
 
 void loop() {
-  if((millis() - lastDriveUpdate > waitDelay)){
-    lastDriveUpdate = millis();
-    drive();
-  }
-  return;
-  analogWrite(LEDS[1], 0);
-  analogWrite(LEDS[2], 0);
-  analogWrite(LEDS[(isOnTrack ? 2 : 1)], 1023);
-  if(millis() - lastLineTest > 5000){
-    lastLineTest = millis();
-    bool lineSensorActive = testRFSensor(0);
-    if(lineSensorActive) 
-      isOnTrack = !isOnTrack;
-  }
-  if(!isOnTrack) goForward();
-  if(isOnTrack && (millis() - lastDriveUpdate > waitDelay)){
+  if(millis() - lastDriveUpdate > 250){
     lastDriveUpdate = millis();
     drive();
   }
@@ -103,16 +85,14 @@ void drive(){
   if((forwardDistance <= SONAR_TRESHOLDS[0][0]) && (rightDistance <= SONAR_TRESHOLDS[1][0]) ||
   (abs(lastForwardDistance - forwardDistance) <= STUCK_DISTANCE_TRESHOLD && abs(lastRightDistance - rightDistance) <= STUCK_DISTANCE_TRESHOLD)){
     goBackwards();
-    waitDelay = 5*defaultDelay;
-    lastForwardDistance = forwardDistance;
+    lastRightDistance = rightDistance;
     return;
   }
-  waitDelay = defaultDelay;
   lastForwardDistance = forwardDistance;
 
-  bool shouldGoForward = (forwardDistance > SONAR_TRESHOLDS[0][1] && rightDistance <= SONAR_TRESHOLDS[1][0]);
-  bool shouldGoRight = (rightDistance > SONAR_TRESHOLDS[1][1] && forwardDistance <= SONAR_TRESHOLDS[0][0]);
-  bool shouldGoLeft = (rightDistance <= SONAR_TRESHOLDS[1][1] && forwardDistance <= SONAR_TRESHOLDS[0][0]);
+  bool shouldGoForward = (forwardDistance > SONAR_TRESHOLDS[0][1]);
+  bool shouldGoRight = (rightDistance > SONAR_TRESHOLDS[1][1] && (!goingRight));
+  bool shouldGoLeft = ((forwardDistance <= SONAR_TRESHOLDS[0][0]) || (rightDistance <= SONAR_TRESHOLDS[1][0] && !goingLeft));
 
   if(shouldGoLeft){
     turnLeft();
@@ -159,7 +139,7 @@ void turnRight() {
 
 void turnLeft() {
   analogWrite(MOTORS[0], motorSpeed);
-  analogWrite(MOTORS[1], motorSpeed/5);
+  analogWrite(MOTORS[1], motorSpeed/2);
   
   digitalWrite(MOTORS_REVERSE[0], LOW);
   digitalWrite(MOTORS_REVERSE[1], HIGH);
