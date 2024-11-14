@@ -10,8 +10,8 @@ const int LINE_SENSORS_TRESHOLD[] = { 800 };
 const int SONAR_TRIG[] = { 4, 5 };
 const int SONAR_ECHO[] = { 6, 7 };
 const double SONAR_TRESHOLDS[2][2] = {
-  { 30, 25 },
-  { 5, 40 }
+  { 30, 35 },
+  { 3, 30 }
 };
 
 const double RIGHT_CHECK_DISTANCE_TRESHOLD = 3.0;
@@ -127,7 +127,11 @@ double getSonarDistance(int sonarId) {
 
 
 void turnRight() {
-  analogWrite(MOTORS[0], motorSpeed/4);
+  for(int i = 0; i < sizeof(LEDS); i++){
+    analogWrite(LEDS[i], 0);
+  }
+  analogWrite(LEDS[0], 1023);
+  analogWrite(MOTORS[0], motorSpeed/(double)7);
   analogWrite(MOTORS[1], motorSpeed);
   
   digitalWrite(MOTORS_REVERSE[0], LOW);
@@ -138,6 +142,10 @@ void turnRight() {
 }
 
 void turnLeft() {
+  for(int i = 0; i < sizeof(LEDS); i++){
+    analogWrite(LEDS[i], 0);
+  }
+  analogWrite(LEDS[1], 1023);
   analogWrite(MOTORS[0], motorSpeed);
   analogWrite(MOTORS[1], motorSpeed/2);
   
@@ -149,6 +157,10 @@ void turnLeft() {
 }
 
 void goForward() {
+  for(int i = 0; i < sizeof(LEDS); i++){
+    analogWrite(LEDS[i], 0);
+  }
+  analogWrite(LEDS[2], 1023);
   analogWrite(MOTORS[0], motorSpeed);
   analogWrite(MOTORS[1], motorSpeed);
   
@@ -157,11 +169,12 @@ void goForward() {
 }
 
 void goBackwards() {
-  analogWrite(MOTORS[0], motorSpeed);
+  analogWrite(MOTORS[0], motorSpeed*((double)3/(double)4));
   analogWrite(MOTORS[1], motorSpeed);
   
   digitalWrite(MOTORS_REVERSE[0], HIGH);
   digitalWrite(MOTORS_REVERSE[1], HIGH);
+  //delay(250);
 }
 
 void stopMotors(){
